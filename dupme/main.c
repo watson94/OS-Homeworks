@@ -13,16 +13,35 @@ int getInt(char * s) {
 	return ans;
 }
 
+char *buffer;
+
+int writeStr (int begin, int end) {
+	int writeRes = 0;
+	while (begin < end) {
+		writeRes = write(1, buffer + begin, end - begin + 1);
+		if (writeRes > 0) {
+			begin += writeRes;
+		}
+	}
+	return writeRes;
+}
+
+
 int main (int argc, char * argv[]) {
 	int k = getInt(argv[1]) ;		
 	int len = 0;
 	int lastindex, curindex, i;
 	int isWrite = 1;
-	char * buffer;
 	buffer = malloc(k + 1);
 	while (1) {
          	int r = read(0, buffer + len, k - len + 1);
 		if (r == 0) {
+			if ((len > 0) && (isWrite == 1) && (len < k + 1)) {
+				writeStr(0, len - 1);
+				write(1, "\n", 1);
+				writeStr(0, len - 1);
+				write(1, "\n", 1);
+			}
 			free(buffer);
 			return 0;
 		}
@@ -35,20 +54,21 @@ int main (int argc, char * argv[]) {
 			curindex = i + len;
 			if (buffer[curindex] == '\n') {
 				if (isWrite) {
-		 			write(1, buffer + lastindex, curindex - lastindex + 1);
-					write(1, buffer + lastindex, curindex - lastindex + 1);
+		 			writeStr(lastindex, curindex);
+					writeStr(lastindex, curindex);
 					
 				} else {
 					isWrite = 1;
 				}
-				lastindex = curindex;
+				lastindex = curindex + 1;
 			} 
 		}
 		if ((lastindex == 0) &&(curindex == k)) {
 			isWrite = 0;
 			len = 0;	
 		} else {
-			memmove(buffer, buffer + lastindex, curindex - lastindex);
+			memmove(buffer, buffer + lastindex, curindex - lastindex + 1);
+			len = curindex - lastindex + 1;
 		}
 	}
 	free(buffer);
