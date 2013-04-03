@@ -18,7 +18,7 @@ char *buffer;
 int writeStr (int begin, int end) {
 	int writeRes = 0;
 	while (begin < end) {
-		writeRes = write(1, buffer + begin, end - begin + 1);
+		writeRes = write(1, buffer + begin, end - begin);
 		if (writeRes > 0) {
 			begin += writeRes;
 		}
@@ -37,9 +37,9 @@ int main (int argc, char * argv[]) {
          	int r = read(0, buffer + len, k - len + 1);
 		if (r == 0) {
 			if ((len > 0) && (isWrite == 1) && (len < k + 1)) {
-				writeStr(0, len - 1);
+				writeStr(0, len);
 				write(1, "\n", 1);
-				writeStr(0, len - 1);
+				writeStr(0, len);
 				write(1, "\n", 1);
 			}
 			free(buffer);
@@ -54,8 +54,8 @@ int main (int argc, char * argv[]) {
 			curindex = i + len;
 			if (buffer[curindex] == '\n') {
 				if (isWrite) {
-		 			writeStr(lastindex, curindex);
-					writeStr(lastindex, curindex);
+		 			writeStr(lastindex, curindex + 1);
+					writeStr(lastindex, curindex + 1);
 					
 				} else {
 					isWrite = 1;
