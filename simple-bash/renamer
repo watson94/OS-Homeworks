@@ -1,0 +1,22 @@
+ARGV=$@
+for filename  in $ARGV 
+do
+    if [ ! -f $filename ]; then
+        echo "no such file: $filename"
+        continue 
+    fi 
+    echo "$filename"
+    echo -n "New filename:"
+    read  newFilename
+    if [ $newFilename ]; then
+       mv "$filename" "$newFilename" 
+    fi
+    
+done
+
+
+
+
+
+
+
