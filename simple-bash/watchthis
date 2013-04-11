@@ -2,12 +2,15 @@ ARG1=$1
 shift;
 
 ARGV=$@
+touch oldFile.tmp
+echo -n "" > oldFile.tmp
+
 while [ true ] 
 do
     $ARGV > newFile.tmp
     cat newFile.tmp
     diff newFile.tmp oldFile.tmp
-    cat newFile.tmp > oldFile.tmp 
+    mv newFile.tmp  oldFile.tmp 
     echo "---------------" 
     sleep $ARG1   
     
