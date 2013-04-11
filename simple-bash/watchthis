@@ -1,0 +1,16 @@
+ARG1=$1
+shift;
+
+ARGV=$@
+while [ true ] 
+do
+    $ARGV > newFile.tmp
+    cat newFile.tmp
+    diff newFile.tmp oldFile.tmp
+    cat newFile.tmp > oldFile.tmp 
+    echo "---------------" 
+    sleep $ARG1   
+    
+ 
+done
+
