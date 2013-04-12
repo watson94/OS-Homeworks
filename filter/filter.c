@@ -29,21 +29,15 @@ int finddelim (char delim, char * buf, int from, int len) {
 
 
 void run_cmd_on(char * buf, int len){
-    printf("im here\n");
-    char * myargv[5];
-    myargv[1] = "ls";
-    myargv[2] = "-la";
-    myargv[3] = 0;
     int parent = fork();
     if( parent == 0 ) {
-        printf("im child\n"); 
-        execvp(myargv[1], &myargv[1]); 
+        myargv[argpos] = buf;
+        execvp(myargv[0], myargv); 
         exit(1);
     }
     else {
         int status;
         waitpid(parent, &status, 0);
-        printf("im parent\n"); 
         if(WIFEXITED(status) && (WEXITSTATUS( status ) == 0 )) {
             buf[len] = '\n';
             write_str(buf, len + 1);
@@ -53,12 +47,13 @@ void run_cmd_on(char * buf, int len){
 
 
 
-int main(int argc, char * argv[]) {
+int main(int argc, char **argv) {
     char delim = '\n';
     int bufsize = 4096;
-    int res;
+    int res = 0;
+    printf("start\n");
 
-    while(res = getopt(argc, argv, "nzb:") != -1){
+    while((res = getopt(argc, argv, "nzb:")) != -1){
             switch(res) {
                 case 'n' :
                      break;
@@ -75,6 +70,18 @@ int main(int argc, char * argv[]) {
                     return 2;
             }
     }
+    printf("%i %i\n", argc, optind);
+    myargv = malloc (sizeof(char *) * (argc - optind + 1));
+    int i = 0;
+    argpos = -1;
+    for (i = optind; i < argc; i++) {
+        myargv[i - optind] = argv[i];
+        if (strcmp(argv[i], "{}") == 0) {
+            argpos = i - optind;
+        }
+    }
+    myargv[argc - optind] = 0;
+
 
     int len = 0;
     int my_eof = 0;
@@ -95,6 +102,7 @@ int main(int argc, char * argv[]) {
         len += r;
         int delimpos;
         while((delimpos = finddelim(delim, buffer, from, len - from)) >= 0) {
+            buffer[delimpos] = 0;
             run_cmd_on(buffer, delimpos);
             memmove(buffer, buffer+delimpos + 1, len - delimpos - 1);
             from = 0;
