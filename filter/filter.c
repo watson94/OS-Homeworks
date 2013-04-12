@@ -29,8 +29,11 @@ int finddelim (char delim, char * buf, int from, int len) {
 
 
 void run_cmd_on(char * buf, int len){
+    int pipefd[2];
+    pipe(pipefd);
     int parent = fork();
     if( parent == 0 ) {
+        dup2(pipefd[1], 1);
         myargv[argpos] = buf;
         execvp(myargv[0], myargv); 
         exit(1);
@@ -51,7 +54,6 @@ int main(int argc, char **argv) {
     char delim = '\n';
     int bufsize = 4096;
     int res = 0;
-    printf("start\n");
 
     while((res = getopt(argc, argv, "nzb:")) != -1){
             switch(res) {
@@ -70,7 +72,6 @@ int main(int argc, char **argv) {
                     return 2;
             }
     }
-    printf("%i %i\n", argc, optind);
     myargv = malloc (sizeof(char *) * (argc - optind + 1));
     int i = 0;
     argpos = -1;
@@ -88,7 +89,7 @@ int main(int argc, char **argv) {
     buffer = malloc(bufsize + 1); 
     while (!my_eof) {
         if (len == bufsize) {
-            return 178;
+            return 3;
         }
         int r = read(0, buffer + len, bufsize - len + 1);
         if (r == 0) {
@@ -96,7 +97,7 @@ int main(int argc, char **argv) {
             buffer[len] = delim;
         }
         if (r < 0) {
-            return 1;
+            return 4;
         }
         int from = len;
         len += r;
@@ -111,7 +112,7 @@ int main(int argc, char **argv) {
     }
     if (len > 0) {
         if (len + 1 > bufsize) {
-            return 128;
+            return 3;
         }
         buffer[len + 1] = delim;
         run_cmd_on(buffer, len + 1);
