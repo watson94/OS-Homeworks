@@ -117,4 +117,6 @@ int main(int argc, char **argv) {
         buffer[len + 1] = delim;
         run_cmd_on(buffer, len + 1);
     }
+    free (buffer);
+    free(myargv);
 }
