@@ -1,0 +1,10 @@
+#!/bin/bash
+filetime=` stat -c %Z "$1"`
+curtime=`date +%s`
+(( age =(curtime-filetime)/60/60/24 ))
+if [[ ($age -ge 2) && ($age -le 5) ]]
+then
+    exit 0
+else
+    exit 1
+fi
