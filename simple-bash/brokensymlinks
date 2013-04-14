@@ -1,24 +1,35 @@
 #!/bin/bash
-function checkBrokenSymlink {
+function checkBrokenSymLink {
     file=$1
     if [ -L $file ]
     then
-        echo $file "Symlink"
-    else
-        echo $file "Not Symlink" 
-    fi
-    if [ -e $file ]
-    then
-        echo $file "Exist"
-        
-    else
-        echo $file "Not exist"
+        if [ ! -e $file ]
+        then
+            echo $file
+        fi
     fi
 }
 
-Directory=$1
-echo $directory
-for curfile in * 
+function recursiveVisit {
+    directory=$1
+    pushd $directory > /dev/null
+    for curFile in *
+    do
+        checkBrokenSymLink $curFile
+        if [ -d $curFile ]
+            then
+                recursiveVisit $curFile
+            fi
+    done
+    popd > /dev/null 
+}
+
+ARGV=$@
+for curFile in $ARGV
 do
-    checkBrokenSymlink $curfile
+    checkBrokenSymLink $curFile
+    if [ -d $curFile ] 
+        then
+            recursiveVisit $curFile
+        fi
 done
