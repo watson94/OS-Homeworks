@@ -1,0 +1,24 @@
+#!/bin/bash
+function checkBrokenSymlink {
+    file=$1
+    if [ -L $file ]
+    then
+        echo $file "Symlink"
+    else
+        echo $file "Not Symlink" 
+    fi
+    if [ -e $file ]
+    then
+        echo $file "Exist"
+        
+    else
+        echo $file "Not exist"
+    fi
+}
+
+Directory=$1
+echo $directory
+for curfile in * 
+do
+    checkBrokenSymlink $curfile
+done
