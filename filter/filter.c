@@ -94,7 +94,6 @@ int main(int argc, char **argv) {
         int r = read(0, buffer + len, bufsize - len + 1);
         if (r == 0) {
             my_eof = 1;
-            buffer[len] = delim;
         }
         if (r < 0) {
             return 4;
