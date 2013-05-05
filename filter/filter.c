@@ -109,12 +109,13 @@ int main(int argc, char **argv) {
             len -= delimpos + 1;
         }        
     }
+
     if (len > 0) {
         if (len + 1 > bufsize) {
             return 3;
         }
-        buffer[len + 1] = delim;
-        run_cmd_on(buffer, len + 1);
+        buffer[len] = delim;
+        run_cmd_on(buffer, len );
     }
     free (buffer);
     free(myargv);
