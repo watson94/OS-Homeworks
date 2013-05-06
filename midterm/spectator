@@ -1,0 +1,16 @@
+#!/bin/bash
+filename="qwe.txt"
+
+touch oldFile.tmp
+count=0
+while [ $count -lt 2 ]; do
+    if   diff $filename oldFile.tmp > /dev/nulli  ; then
+        let "count = $count + 1"
+    else
+        cat $filename > oldFile.tmp
+        count=0
+    fi
+    cat  oldFile.tmp
+    echo
+    sleep 1
+done
