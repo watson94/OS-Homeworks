@@ -4,7 +4,7 @@ filename="qwe.txt"
 touch oldFile.tmp
 count=0
 while [ $count -lt 2 ]; do
-    if   diff $filename oldFile.tmp > /dev/nulli  ; then
+    if   diff $filename oldFile.tmp > /dev/null  ; then
         let "count = $count + 1"
     else
         cat $filename > oldFile.tmp
