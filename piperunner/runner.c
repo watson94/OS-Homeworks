@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <vector>
 #include <stdlib.h>
+#include <sys/wait.h>
 void  write_str (int  fd, char *str, int size) {
     int i = 0;
     while (i < size) {
@@ -25,6 +26,22 @@ int findseparator(char separator, char * str, int size) {
     }
     return -1;
 }
+
+char ** parsecommand(std::vector<std::vector<char > > com) {
+    char ** ans = (char **)malloc(com.size() + 1);
+    for (int i = 0; i < com.size(); i++) {
+        ans[i] = (char *) malloc(com[i].size() + 1);
+        for (int j = 0; j < com[i].size(); j++) {
+            ans[i][j] = com[i][j];
+        }
+        ans[i][com[i].size()] = 0;
+    }
+    ans[com.size()] = NULL;
+    return ans;
+}
+
+
+
 int main (int argc , char ** argv) {
     const int maxsize = 4096;
     char * buffer = (char *) malloc(maxsize );
@@ -86,9 +103,30 @@ int main (int argc , char ** argv) {
             }
         }
     }
-    printf("%i\n", curind);
     
 
+    int curpipe[2];
+    int lastpipe[2];
+    pipe(lastpipe);
+    pipe(curpipe);
+    dup2(0, lastpipe[0]);
+//    for (int i = 0; i < commands.size() - 1; i++) {
+        int pid = fork();
+        if (pid == 0) {
+            dup2(lastpipe[0], 0);
+//            dup2(curpipe[1], 1);
+            char ** mycommand = parsecommand(commands[0]);
+            printf("%s\n", mycommand[0]);
+            printf("%s\n", mycommand[1]);
+            printf("%s\n", mycommand[2]);
+            execvp(mycommand[0], mycommand);
+        } else {
+            waitpid(pid,NULL, 0);
+            lastpipe[0] = curpipe[0];
+            lastpipe[1] = curpipe[1]; 
+            pipe(curpipe);
+        }
+//    }
 
 
 
@@ -96,8 +134,7 @@ int main (int argc , char ** argv) {
 
 
 
-
-    int i, j, k;
+/*    int i, j, k;
     for (i = 0; i < commands.size() ; i++) {
         for (j = 0; j < commands[i].size() - 1; j++) {
             for (k = 0; k < commands[i][j].size() ; k++) {
@@ -106,5 +143,5 @@ int main (int argc , char ** argv) {
             printf("new word\n");
         }
         printf("new command\n");
-    }
+    }*/ 
 }
