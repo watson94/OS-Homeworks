@@ -1,2 +1,2 @@
 all :runner.c 
-	gcc runner.c -o runner
+	g++ runner.c -o runner
