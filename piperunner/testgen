@@ -1,0 +1,25 @@
+#!/bin/bash
+str1="grep\0aba\0\0"
+str2="cat\0testinput\0\0"
+i=0
+count=$RANDOM
+let "count=$count % 25"
+rm testfile3
+while [ $i -lt $count ] 
+do
+    echo "HELLO"
+    j=$RANDOM
+    k=0
+    let "k=$j % 2"
+    if [ $k -eq 0 ]
+    then
+        echo -ne "$str1" >> testfile3
+    else
+        echo -ne "$str2" >> testfile3
+    fi
+    let "i=$i + 1"    
+done
+
+./runner testfile3
+
+
