@@ -1,6 +1,6 @@
 #!/bin/bash
 filename="qwe.txt"
-
+rm oldFile.tmp
 touch oldFile.tmp
 count=0
 while [ $count -lt 2 ]; do
