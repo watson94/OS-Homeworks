@@ -5,27 +5,6 @@
 #include <vector>
 #include <stdlib.h>
 #include <sys/wait.h>
-void  write_str (int  fd, char *str, int size) {
-    int i = 0;
-    while (i < size) {
-        int write_res = write(fd, str + i, size - i);
-        if (  write_res > 0) {
-            i += write_res;
-        }
-    }
-}
-
-
-
-int findseparator(char separator, char * str, int size) {
-    int i;
-    for (i = 0; i < size; i++) {
-        if (str[i] == separator) {
-            return i;
-        }
-    }
-    return -1;
-}
 
 char ** parsecommand(std::vector<std::vector<char > > com) {
     char ** ans = (char **) malloc((com.size() + 1) * sizeof(char*));
