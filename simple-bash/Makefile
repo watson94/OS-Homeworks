@@ -1,2 +1,2 @@
 all: watchthis.c
-	gcc watchthis.c -o  watchthis2
+	gcc -Wall -Wextra -Werror watchthis.c -o  watchthis2

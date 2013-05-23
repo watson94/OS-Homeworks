@@ -2,10 +2,17 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 const char * newFile = "newFile.tmp";
 const char * oldFile = "oldFile.tmp";
 int main(int argc, char ** argv) {
+    if (argc < 1) {
+        return 2;
+    }
     int timeout = atoi(argv[1]);
     printf("imhere\n");   
     while (1)  {
@@ -15,26 +22,27 @@ int main(int argc, char ** argv) {
             dup2(newfile, 1);
             execvp(argv[2], &argv[2]);
         } else { 
-            waitpid(pidexec, NULL, 0);
+            waitpid(pidexec, 0, 0);
         }
         int pidcat = fork();
         if (pidcat == 0) {
            execlp("cat", "cat", newFile, NULL);
         } else {
-            waitpid(pidcat, 0, NULL);
+            waitpid(pidcat, 0, 0);
         }
         int piddiff = fork();
         if (piddiff == 0) {
            execlp("diff", "diff", "-u", newFile, oldFile, NULL);
         } else {
-           waitpid(piddiff, 0, NULL);
+           waitpid(piddiff, 0, 0);
         }
         int pidmv = fork();
         if (pidmv == 0) {
            execlp("mv", "mv", newFile, oldFile, NULL);
         } else {
-           waitpid(pidmv, NULL, 0);
+           waitpid(pidmv, 0, 0);
         }
         sleep(timeout); 
     }
+    return 0;
 }
