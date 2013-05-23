@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
-char * buffer;
+
 char ** myargv;
 int argpos;
 
@@ -50,7 +52,9 @@ void run_cmd_on(char * buf, int len){
 
 
 
+
 int main(int argc, char **argv) {
+
     char delim = '\n';
     int bufsize = 4096;
     int res = 0;
@@ -63,7 +67,7 @@ int main(int argc, char **argv) {
                      delim = 0;
                      break;
                 case 'b' :
-                     bufsize = optarg;        
+                     bufsize = (int) optarg;        
                      break;
                 case '?' : 
                     return 1;
@@ -73,6 +77,10 @@ int main(int argc, char **argv) {
             }
     }
     myargv = malloc (sizeof(char *) * (argc - optind + 1));
+    if (myargv == NULL) {
+        return 3;
+    }
+    
     int i = 0;
     argpos = -1;
     for (i = optind; i < argc; i++) {
@@ -86,7 +94,12 @@ int main(int argc, char **argv) {
 
     int len = 0;
     int my_eof = 0;
-    buffer = malloc(bufsize + 1); 
+    char * buffer = malloc(bufsize + 1); 
+
+    if (buffer == NULL) {
+        return 3;
+    }
+
     while (!my_eof) {
         if (len == bufsize) {
             return 3;
@@ -119,4 +132,5 @@ int main(int argc, char **argv) {
     }
     free (buffer);
     free(myargv);
+    return 0;
 }
