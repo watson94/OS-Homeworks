@@ -1,21 +1,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-int getInt(char * s) {
-	int i = 0;
-	int ans = 0;
-	while (s[i] !='\0') {
-		ans *= 10;
-		ans += s[i] - '0';
-		i++;
-	}
-	return ans;
-}
-
-char *buffer;
-
-int writeStr (int begin, int end) {
+int writestr (int begin, int end, char * buffer) {
 	int writeRes = 0;
 	while (begin < end) {
 		writeRes = write(1, buffer + begin, end - begin);
@@ -27,20 +15,26 @@ int writeStr (int begin, int end) {
 }
 
 
+void writetwice(int begin, int end, char * buffer) {
+    writestr(begin, end, buffer);
+    writestr(begin, end, buffer);
+}
+
 int main (int argc, char * argv[]) {
-	int k = getInt(argv[1]) ;		
+    if (argc < 1) {
+        return 2;
+    }
+	int k = atoi(argv[1]) ;		
 	int len = 0;
 	int lastindex, curindex, i;
 	int isWrite = 1;
-	buffer = malloc(k + 1);
+	char * buffer = malloc(k + 1);
 	while (1) {
          	int r = read(0, buffer + len, k - len + 1);
 		if (r == 0) {
 			if ((len > 0) && (isWrite == 1) && (len < k + 1)) {
-				writeStr(0, len);
-				write(1, "\n", 1);
-				writeStr(0, len);
-				write(1, "\n", 1);
+                buffer[len] = '\n'; 
+				writetwice(0, len + 1, buffer);
 			}
 			free(buffer);
 			return 0;
@@ -54,8 +48,7 @@ int main (int argc, char * argv[]) {
 			curindex = i + len;
 			if (buffer[curindex] == '\n') {
 				if (isWrite) {
-		 			writeStr(lastindex, curindex + 1);
-					writeStr(lastindex, curindex + 1);
+                    writetwice(lastindex, curindex + 1, buffer);
 					
 				} else {
 					isWrite = 1;
