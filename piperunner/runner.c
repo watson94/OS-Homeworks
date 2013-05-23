@@ -8,9 +8,9 @@
 
 char ** parsecommand(std::vector<std::vector<char > > com) {
     char ** ans = (char **) malloc((com.size() + 1) * sizeof(char*));
-    for (int i = 0; i < com.size(); i++) {
+    for  (size_t i = 0; i < com.size(); i++) {
         ans[i] = (char *) malloc(com[i].size() + 1);
-        for (int j = 0; j < com[i].size(); j++) {
+        for (size_t j = 0; j < com[i].size(); j++) {
             ans[i][j] = com[i][j];
         }
         ans[i][com[i].size()] = 0;
@@ -19,24 +19,31 @@ char ** parsecommand(std::vector<std::vector<char > > com) {
     return ans;
 }
 
-void myfree(char ** arg, int size) {
-    for (int i = 0; i < size; i++) {
+void myfree(char ** arg, size_t size) {
+    for (size_t i = 0; i < size; i++) {
         free(arg[i]);
     }
     free(arg);
 }
 
 int main (int argc , char ** argv) {
+    if (argc < 1) {
+        return 1;
+    }
+
     const int maxsize = 4096;
+
     char * buffer = (char *) malloc(maxsize );
+
+    if (buffer == NULL) {
+        return 2;
+    }
+
     char * filename = argv[1];
 
     int  fdin = open(filename, O_RDWR, S_IRWXU);
-    int  output = 1;
 
-    char separator = '\0';
     int curlen = 0;
-    int myeof = 0;
     
     int curword = 0;
     int issep = 0;
@@ -55,9 +62,8 @@ int main (int argc , char ** argv) {
         if (read_res == 0) {
             break;
         }
-        int from = 0;
 
-        for ( int i = 0; i < read_res; i++) {
+        for (int i = 0; i < read_res; i++) {
             if (iscreate == 1) {
                 if (curind >= 0) {
                     commands[curind].pop_back();
@@ -95,8 +101,7 @@ int main (int argc , char ** argv) {
     pipe(lastpipe);
     pipe(curpipe);
     dup2(0, lastpipe[0]);
-    int pp = 0;
-    for (int i = 0; i < commands.size() ; i++) {
+    for (size_t i = 0; i < commands.size() ; i++) {
         int pid = fork();
         char ** mycommand = parsecommand(commands[i]);
         if (pid == 0) {
@@ -123,15 +128,4 @@ int main (int argc , char ** argv) {
             myfree(mycommand, commands[i].size());
         }
     }
-/*
-    int i, j, k;
-    for (i = 0; i < commands.size() ; i++) {
-        for (j = 0; j < commands[i].size() - 1; j++) {
-            for (k = 0; k < commands[i][j].size() ; k++) {
-                printf("%c\n", commands[i][j][k]);
-            }
-            printf("new word\n");
-        }
-        printf("new command\n");
-    }*/ 
 }
