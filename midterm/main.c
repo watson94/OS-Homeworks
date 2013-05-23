@@ -1,6 +1,8 @@
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/stat.h>
 void  write_str (int  fd, char *str, int size) {
     int i = 0;
@@ -16,9 +18,19 @@ int min (int a, int b) {
     if (a < b) return a;
     return b;
 }
+
 int main (int argc , char ** argv) {
+    
+    if (argc < 2) {
+        return 2;
+    }
     const int maxsize = 4096;
     char * buffer = (char *) malloc(maxsize);
+
+    if (buffer == NULL) {
+        return 1;
+    }
+
     char * src = argv[1];
     char * dst = argv[2];
     int bytes = atoi(argv[3]); // byte/seconds
@@ -35,4 +47,5 @@ int main (int argc , char ** argv) {
         write_str(out, buffer, n);
     }
 
+    return 0;
 }
