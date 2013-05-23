@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
                      delim = 0;
                      break;
                 case 'b' :
-                     bufsize = (int) optarg;        
+                     bufsize =  atoi(optarg);        
                      break;
                 case '?' : 
                     return 1;
