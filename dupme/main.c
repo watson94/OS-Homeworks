@@ -29,6 +29,10 @@ int main (int argc, char * argv[]) {
 	int lastindex, curindex, i;
 	int isWrite = 1;
 	char * buffer = malloc(k + 1);
+    if (buffer == NULL) {
+        printf("An error occured when allocated memory for buffer\n");
+        return 1;
+    }
 	while (1) {
          	int r = read(0, buffer + len, k - len + 1);
 		if (r == 0) {
