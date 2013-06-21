@@ -50,6 +50,10 @@ int main (int argc, char ** argv) {
         int cfd = accept(sfd, NULL, NULL);
         pid_t pid = fork();
         if (!pid) {
+            //time
+            //send 
+            //get
+            //
             dup2(cfd, 0);
             dup2(cfd, 1);
             dup2(cfd, 2);
