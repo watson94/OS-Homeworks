@@ -84,38 +84,70 @@ void write_str_to_buffer(std::string s1, std::vector<char> & b) {
     }
 }
 
-
-void write_c_to_buffer(std::string s1, std::string s2, std::string s3, std::vector<char> & b) {
-    write_str_to_buffer("c ", b);
-    write_str_to_buffer(s1, b);
-    write_str_to_buffer(" ", b);
-    write_str_to_buffer(s2, b);
-    write_str_to_buffer(" ", b);
-    write_str_to_buffer(s3, b);
-    write_str_to_buffer("\n", b);
-}
-
-void write_g_to_buffer(std::string s1, std::vector<char> & b) {
-    write_str_to_buffer("g ", b);
-    write_str_to_buffer(s1, b);
-    write_str_to_buffer("\n", b);
-}
-
 struct multihead_queue {
     std::vector<char> buffer;
     std::vector<size_t> pos;
-    std::vectot<int> cnt_ref;
+    std::vector<int> cnt_ref;
     multihead_queue() {
         pos.push_back(0);
     }
     void add(std::string s) {
         for (size_t i = 0; i < s.size(); i++) {
             buffer.push_back(s[i]);
-            cnt.push_back(pos.size());
+            cnt_ref.push_back(pos.size() - 1);
         }
+    }
+    void add_port(int port) {
+        std::vector<char> tmp;
+        while (port > 0) {
+            char x = '0' + (port % 10);
+            port = port / 10;
+            tmp.push_back(x);
+        }
+        for (int i = tmp.size() - 1; i >= 0; i--) {
+            buffer.push_back(tmp[i]);
+            cnt_ref.push_back(pos.size() - 1);
+        }
+        return;
+    }
+    void add_println() {
+        buffer.push_back('\n');
+        cnt_ref.push_back(pos.size() - 1);
+    }
+    void dec_cnt_ref(size_t start, size_t end) {
+        for (size_t i = start; i < end; i++) {
+            cnt_ref[i]--;
+        }
+    }
+    void update() {
+        size_t i = 0;
+        while ( (i < buffer.size()) && (cnt_ref[i] == 0)) {
+            i++;
+        }
+        std::vector<char> tmp;
+        std::vector<int> new_cnt;
+        for (size_t j = i; j < buffer.size(); j++) {
+            tmp.push_back(buffer[j]);
+            new_cnt.push_back(cnt_ref[j]);
+        }
+        for (size_t j = 1; j < pos.size(); j++) {
+            pos[j] = pos[j] - i;
+        }
+        cnt_ref = new_cnt;
+        buffer = tmp;
     }
 
 };
+
+
+int finddelim( std::vector<char> & v, char delim) {
+    for (size_t i = 0; i < v.size(); i++) {
+        if (v[i] == delim) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 
 int pid;
@@ -133,7 +165,7 @@ int main (int argc, char ** argv) {
         setsid();
         int status, sd;
         struct addrinfo hints, *res;
-        struct sockaddr_storage sock_stor;
+//      struct sockaddr_storage sock_stor;
         if (argc != 2) {
             perror("Wrong number of argument");
             return 3;
@@ -181,6 +213,9 @@ int main (int argc, char ** argv) {
         pollfds[0].events = POLLIN | POLLERR;
         std::vector<std::vector< char > > bufread;
         std::vector<char> tmp;
+        std::vector<int> port;
+        port.push_back(0);
+
         bufread.push_back(tmp);
         multihead_queue mqueue;
         while (1) {
@@ -191,10 +226,7 @@ int main (int argc, char ** argv) {
                     pollfds[i].revents = 0;
                 }
             }
-            std::cout << "Before poll" << std::endl;
             int polldata = poll(pollfds.data(), pollfds.size(), -1);
-            std::cout << "After poll" << std::endl;
-
             if (polldata < 0) {
                 printf("It cant be\n");
                 exit(7);
@@ -206,10 +238,9 @@ int main (int argc, char ** argv) {
 
             if (pollfds[0].revents & POLLIN) {
                 printf("Connecting to new client...\n");
-
                 sockaddr_in client;
                 client.sin_family = AF_INET;
-                socklen_t addr_size = sizeof(sock_stor);
+                socklen_t addr_size = sizeof(client);
                 int cfd = accept(sd, (struct sockaddr *) &client, &addr_size);
                 if (cfd == -1) {
                     exit(9);
@@ -218,6 +249,7 @@ int main (int argc, char ** argv) {
                 
                 std::cout << "Connected to: " << client.sin_addr.s_addr << std::endl;
                 std::cout << "IP: " << (client.sin_port) << std::endl;
+                port.push_back(client.sin_port);
                 struct pollfd tmp;
                 tmp.fd = cfd;
                 tmp.events = POLLIN | POLLOUT | POLLERR | POLLHUP;
@@ -229,20 +261,15 @@ int main (int argc, char ** argv) {
             }
             for (size_t i = 1; i < pollfds.size(); i++) {
                 if ((pollfds[i].revents & POLLOUT) && (mqueue.pos[i] < mqueue.buffer.size())) {
-                    std::cout << "I will write to : " << pollfds[i].fd << std::endl;
                     size_t len = buffersize;
                     if ( ( mqueue.buffer.size() - mqueue.pos[i]) < len) {
                         len = mqueue.buffer.size() - mqueue.pos[i];
                     }
                     int w = write(pollfds[i].fd, mqueue.buffer.data() + mqueue.pos[i] , len);
                     check_write(w);
+                    mqueue.dec_cnt_ref(mqueue.pos[i], mqueue.pos[i] + w);
                     mqueue.pos[i] += w;
-                    // check if we was min
-                    /*std::vector<char> tmp;   
-                    for (size_t j = w; j < bufwrite[i].size(); j++) {
-                        tmp.push_back(bufwrite[i][j]);
-                    }
-                    bufwrite[i] = tmp; */
+                    mqueue.update();
                 }
             }
             for (size_t i = 1; i < pollfds.size(); i++) {
@@ -253,13 +280,7 @@ int main (int argc, char ** argv) {
                         bufread[i].push_back(buffer[j]);
                     }
                     while (1) {
-                        int posn = -1;
-                        for (size_t j = 0; j < bufread[i].size(); j++) {
-                            if (bufread[i][j] == ' ') {
-                                posn = j;
-                                break;
-                            }
-                        }
+                        int posn = finddelim(bufread[i], ' ');
                         if (posn == -1) {
                             break;
                         }
@@ -279,11 +300,15 @@ int main (int argc, char ** argv) {
                                 message.push_back(bufread[i][j]);
                             }
                             curpos += size;
+                            mqueue.add_port(port[i]);
+
+                            mqueue.add(" ");
                             mqueue.add(message);
+                            mqueue.add_println();
                         } else {
                             break;
                         }
-                        
+
                         std::vector<char> tmp;
                         for(size_t j = curpos ; j < bufread[i].size(); j++) {
                             tmp.push_back(bufread[i][j]);
