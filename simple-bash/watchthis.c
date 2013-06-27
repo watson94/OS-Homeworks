@@ -7,14 +7,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char * newFile = "newFile.tmp";
-const char * oldFile = "oldFile.tmp";
 int main(int argc, char ** argv) {
     if (argc < 1) {
         return 2;
     }
+
+    const char * newFile = "newFile.tmp";
+    const char * oldFile = "oldFile.tmp";
+
     int timeout = atoi(argv[1]);
-    printf("imhere\n");   
+//  printf("imhere\n");   
+
+
     while (1)  {
         int newfile = open(newFile, O_CREAT  | O_RDWR, S_IRWXU);
         int pidexec = fork();
