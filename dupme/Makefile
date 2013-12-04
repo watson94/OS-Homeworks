@@ -1,2 +1,2 @@
-all: main.c
-	g++ -o main -Wall -Wextra -Werror -g main.c
+all: main.cpp
+	g++  -Wall -Wextra -Werror -std=c++11 main.cpp -o main

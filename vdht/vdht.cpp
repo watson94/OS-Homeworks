@@ -213,14 +213,15 @@ int main(int argc, char ** argv) {
 
     while (1) {
         for (size_t i = 2; i < pollfds.size(); i++) {
-            pollfds[i].events = POLLERR | POLLIN;
+            pollfds[i].events = POLLERR | POLLHUP | POLLIN;
             if (bufwrite[i].size()> 0) {
                 pollfds[i].events |= POLLOUT;
+                pollfds[i].revents = 0;
             }
         }
-        std::cout << "Before poll" << std::endl;
+//        std::cout << "Before poll" << std::endl;
         int polldata = poll(pollfds.data(), pollfds.size(), -1);
-        std::cout << "After poll" << std::endl;
+//        std::cout << "After poll" << std::endl;
 
         if (polldata < 0) {
             printf("It cant be\n");
@@ -248,7 +249,7 @@ int main(int argc, char ** argv) {
             printf("Connected to new client\n");
         }
         for (size_t i = 2; i < pollfds.size(); i++) {
-            if (pollfds[i].revents & POLLOUT) {
+            /*if (pollfds[i].revents & POLLOUT) {
                 std::cout << "POLLOUT" <<std::endl;
             }
             if(pollfds[i].revents & POLLIN) {
@@ -259,7 +260,7 @@ int main(int argc, char ** argv) {
             }
             if (pollfds[i].revents & POLLHUP) {
                 std::cout << "POLLHUP" <<std::endl;
-            }
+            }*/
             if ((pollfds[i].revents & POLLOUT) && (bufread.size() > 0)) {
                 std::cout << "I will write to : " << pollfds[i].fd << std::endl;
                 std::cout << "buffer : " << bufread[i].size() << std::endl;
